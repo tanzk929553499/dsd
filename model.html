@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>Model</title>
+	<link rel="stylesheet" href="layui/css/layui.css">
+	<!-- <script src="jquery-3.5.1/jquery-3.5.1.js" type="text/javascript"></script> -->
+	<script src="js/jquery-3.5.1.js" type="text/javascript"></script>
+	<script src="layui/layui.js" type="text/javascript" charset="utf-8"></script>
+</head>
+
+<body>
+<div>
+<div class="layui-anim layui-anim-upbit" style="position: absolute;top: 0;bottom: 0;left: 0;right: 0;margin: auto;height: 78%; width: 50%;">
+	<fieldset>
+		<legend>Select Algorithm</legend>
+		<form class="layui-form" action="">
+			<select id="algo" lay-filter="algoselect">
+				<option value="default" disabled selected>--Please Select an Algorithm--</option>
+			</select>
+		</form>
+		<span id="desc"></span><br>
+		<span>Once you have selected an algorithm, the target of the following operations is the model under that algorithm</span>
+	</fieldset>
+
+	<fieldset>
+		<legend>Update Model</legend>
+		<center>
+		<div id="updateModel">
+			<button class="layui-btn layui-btn-normal" id="update" style="text-align: center; margin-top: 1%">Update Device Model</button>
+			<button class="layui-btn layui-btn-normal" id="train" style="text-align: center; margin-top: 1%">Train Model Using Collected Data</button>
+
+			<div id="updateProgressDiv" style="margin-top: 2%" class="layui-row">
+				<div style="float: left" class="layui-col-md4">Update Device Model Progress Bar</div>
+				<div class="layui-progress layui-col-md9" style="width:50%; margin-top: 1%">
+					<div class="layui-progress-bar" id="updateBar" lay-percent="100%"></div>
+				</div>
+				<div><span id="updateProgress" class="layui-col-md1">100%</span></div>
+			</div>
+		</div>
+		<button class="layui-btn layui-btn-normal" id="getBase" style="text-align: center; margin-top: 1%">
+			<i class="layui-icon">&#xe601;</i>Download Base Model
+		</button>
+		<button class="layui-btn layui-btn-normal" id="getModel" style="text-align: center; margin-top: 1%">
+			<i class="layui-icon">&#xe601;</i>Download Model From Device
+		</button>
+		</center>
+	</fieldset>
+
+	<fieldset>
+		<legend>Delete Model</legend>
+		<div id="deleteModelCloud" style="text-align: center">
+			<button class="layui-btn layui-btn-normal" id="deleteDevice" style="text-align: center; margin-top: 1%">Delete Local Model From Device</button>
+			<button class="layui-btn layui-btn-normal" id="delete" style="text-align: center; margin-top: 1%">Delete Model From Cloud</button>
+			<button class="layui-btn layui-btn-normal" id="deleteAll" style="text-align: center; margin-top: 1%">Delete Model of All Algorithms</button>
+		</div>
+	</fieldset>
+
+	<fieldset id="adminSet">
+		<legend>Administrators Manage Model</legend>
+		<center>
+		<input id="model" type="file" placeholder="Select Model File"/>
+		<label for="model">Select a Model File</label>
+		<button class="layui-btn layui-btn-normal" id="upload" style="text-align: center; margin-left: 3%;">
+			<i class="layui-icon">&#xe681;</i>Upload Model
+		</button>
+		<button class="layui-btn layui-btn-normal" id="uploadBase" style="text-align: center;">
+			<i class="layui-icon">&#xe681;</i>Upload Base Model
+		</button>
+		<br>
+		<div id="uploadProgressDiv" style="margin: 1%" class="layui-row">
+			<div style="float: left" class="layui-col-md4">Upload Model Progress Bar</div>
+			<div class="layui-progress layui-col-md9" style="width:50%; margin-top: 1%" >
+				<div class="layui-progress-bar" id="uploadBar" lay-percent="100%"></div>
+			</div>
+			<div class="layui-col-md1"><span id="uploadProgress" style="margin: 1%;">100%</span></div>
+		</div>
+		
+		<div id="uploadBaseProgressDiv" style="margin: 1%" class="layui-row">
+			<div style="float: left" class="layui-col-md4">Upload Base Model Progress Bar</div>
+			<div class="layui-progress layui-col-md9" style="width:50%; margin-top: 1%">
+				<div class="layui-progress-bar" id="uploadBaseBar" lay-percent="100%"></div>
+			</div>
+			<div class="layui-col-md1"><span id="uploadBaseProgress" style="margin: 1%;">100%</span></div>
+		</div>
+		</center>
+		
+	</fieldset>
+</div>
+</div>
+</body>
+<script>
+	
+	var uuid = localStorage.getItem("uuid");
+	var Authorization = localStorage.getItem("ticket");
+	var isAdmin = localStorage.getItem("isadmin");
+	var algoList;
+	var deviceApiUrl = 'https://device-api.ifan.dev:8';
+	var cloudApiUrl = 'https://cloud-api.ifan.dev:8';
+
+$(document).ready(function(){
+	if(isAdmin=='false'){
+		$("#adminSet").hide(); 
+	}
+	getAlgorithms();
+	$("#updateProgressDiv").css('display','none'); 
+	$("#uploadProgressDiv").css('display','none');
+	$("#uploadBaseProgressDiv").css('display','none');
+
+});
+
+	layui.use('form', function () {
+		var form = layui.form;
+    	form.render("select");
+        $ = layui.jquery;
+ 
+    	form.on('select(algoselect)', function (data) {
+        	$('#desc').text(algoList[$("#algo").val()].desc);
+    	});
+
+	});
+
+function getAlgorithms(){
+	$.ajax({
+        type: 'GET',
+        //url: 'https://cloud-api.ifan.dev:8/api/models',
+        url: cloudApiUrl + '/api/models',
+        //url:'/dsd2/testServlet',
+        headers: {
+            'Authorization': Authorization
+        },
+        dataType: 'json',
+        success: function (data, status, response) {
+        	layui.use(['layer', 'form'], function () {
+        		var form = layui.form;
+        		//alert(JSON.stringify(data));
+    			algoList=data;
+    			for(key in data){
+        			$("#algo").append("<option value="+data[key].name+">"+data[key].display+"</option>");
+    			}
+        		form.render();
+        	})		
+		},
+		error:function(jqXHR, textStatus, errorThrown){
+			if(jqXHR.status == 401){
+				layui.use('layer', function(){
+					layer.alert("Invalid device ticket!",{title: "Warnning!", btn: ['OK']});
+				})
+			}else{
+				layui.use('layer', function(){
+					layer.alert("ERROR!",{title: "Warnning!", btn: ['OK']});
+				})
+			}
+
+		}
+    })
+    
+}
+
+function updateModel(){
+	var algo=$("#algo option:selected").val();
+	if(algo=='default'){
+		layui.use('layer', function(){
+			layer.alert("Please select an algorithm!",{title: "Information", btn: ['OK']});
+		})
+		return;
+	}
+	//var url = 'https://cloud-api.ifan.dev:8/api/device/'+ uuid +'/model/'+algo;
+	var url = cloudApiUrl + '/api/device/'+ uuid +'/model/'+algo;
+	var xhr;
+	if (window.XMLHttpRequest) {
+  		xhr = new XMLHttpRequest();
+	} else {
+ 		xhr = new ActiveXObject("Microsoft.XMLHTTP");
+	}
+	xhr.open('GET', url, true);
+	xhr.setRequestHeader('Authorization', Authorization);
+    xhr.responseType = "blob";
+    xhr.onload = function () {
+        if (this.status == 200) {
+        	alert();
+			var lastModified = xhr.getResponseHeader('Last-Modified');
+			if(lastModified==null){
+				lastModified='Only Base Model';
+			}
+			var size = xhr.getResponseHeader('Content-Length');
+			
+			var modelBlob = this.response;
+			var modelFile = new FormData();
+			modelFile.append('model', new window.File([modelBlob],'model'));
+			var signature = xhr.getResponseHeader('Signature');
+			
+			layer.open({
+				title:"Information",
+				type:0,
+				closeBtn:0,
+				btn:["Yes","No"],
+				content:"Last-Modified: " + lastModified + "  " + "Size:" + size + "B",
+				btn1:function(){
+					
+					$.ajax({
+						type: 'PUT', 
+						//url: 'https://device-api.ifan.dev:8/model/'+algo,
+						url: deviceApiUrl + '/model/'+algo,
+						contentType: false,
+						processData: false,
+						headers:{
+							//'Content-Type': 'multipart/form-data',
+							'Signature': signature,
+							'Authorization': Authorization
+						},
+						data: modelFile,
+						xhr: function xhr() {
+							var xhr = $.ajaxSettings.xhr();
+		            		if (xhr.upload) {
+		                		xhr.upload.addEventListener('progress', function (e) {
+		                    		var percentage = parseInt(e.loaded / e.total * 100);
+									$("#updateProgress").html(percentage+'%');
+									layui.use('element', function(){
+										var element = layui.element;
+										$('#updateBar').attr('lay-percent',percentage+'%');
+		                    			element.init();
+									});
+									
+		                		}, false);
+							}
+		        			return xhr;
+						},
+						success:function(data, status, response){
+							layui.use('layer', function(){
+								layer.alert("Update Successfully!",{title: "Information", btn: ['OK']});
+							})
+							$("#updateProgressDiv").css('display','none'); 
+						},
+						error:function(jqXHR, textStatus, errorThrown){
+							if(jqXHR.status == 400){
+								layui.use('layer', function(){
+									layer.alert("Signature is NOT Valid!",{title: "Information", btn: ['OK']});
+								})
+							}else if(jqXHR.status == 401){
+								layui.use('layer', function(){
+									layer.alert("Invalid device ticket!",{title: "Warnning!", btn: ['OK']});
+								})
+							}else{
+								layui.use('layer', function(){
+									layer.alert("Update failed!",{title: "Warnning!", btn: ['OK']});
+								})
+							}
+							$("#updateProgressDiv").css('display','none'); 
+						}
+					});
+					var index = layer.open();
+					layer.close(layer.index)
+					
+				},
+				btn2:function(){
+					$("#updateProgressDiv").css('display','none'); 
+				}
+			})
+			
+		}
+		else if(this.status == 400){
+			layui.use('layer', function(){
+				layer.alert("UUID is NOT Valid!",{title: "Information", btn: ['OK']});
+			})
+			$("#updateProgressDiv").css('display','none'); 
+		}
+		else if(this.status == 401){
+			layui.use('layer', function(){
+				layer.alert("Invalid device ticket!",{title: "Warnning!", btn: ['OK']});
+			})
+		}
+		else{
+			layui.use('layer', function(){
+				layer.alert("ERROR!",{title: "Information", btn: ['OK']});
+			})	
+			$("#updateProgressDiv").css('display','none'); 
+		}
+    };
+	$("#updateProgress").html(0+'%');
+		layui.use('element', function(){
+			var element = layui.element;
+			$('#updateBar').attr('lay-percent',0+'%');
+            element.init();
+			element.progress('updateBar', 0+'%');
+	});
+	$("#updateProgressDiv").css('display','block'); 
+    xhr.send();
+}
+
+function trainModel(){
+	var algo=$("#algo option:selected").val();
+	if(algo=='default'){
+		layui.use('layer', function(){
+			layer.alert("Please select an algorithm!",{title: "Information", btn: ['OK']});
+		})
+		return;
+	}
+	$.ajax({ 
+		type: 'POST', 
+		//url: 'https://cloud-api.ifan.dev:8/api/device/'+ uuid +'/model/'+algo,
+		url: cloudApiUrl + '/api/device/'+ uuid +'/model/'+algo,
+		headers: {
+			'Authorization': Authorization			
+		},
+		success:function(data, status, response){
+		    layui.use('layer', function(){
+				layer.alert("An email will be send to the device contact email (if set) when the training finishes!",{title: "Information", btn: ['OK']});
+			})
+		},
+		error:function(jqXHR, textStatus, errorThrown){
+			if(jqXHR.status == 400){
+				layui.use('layer', function(){
+					layer.alert("No Calibration Data Available!",{title: "Warnning!", btn: ['OK']});
+				})
+			}else if(jqXHR.status == 401){
+				layui.use('layer', function(){
+					layer.alert("Invalid device ticket!",{title: "Warnning!", btn: ['OK']});
+				})
+			}else{
+				layui.use('layer', function(){
+					layer.alert("ERROR!",{title: "Warnning!", btn: ['OK']});
+				})
+			} 
+		}
+	});
+}
+
+function deleteModelDevice(){
+	$.ajax({ 
+		type: 'DELETE', 
+		//url: 'https://device-api.ifan.dev:8/model',
+		url: deviceApiUrl + '/model',
+		headers: {
+			'Authorization': Authorization			
+		},
+		success:function(data, status, response){
+		    layui.use('layer', function(){
+				layer.alert("Delete Successfully!",{title: "Information", btn: ['OK']});
+			})
+		},
+		error:function(jqXHR, textStatus, errorThrown){
+			if(jqXHR.status == 401){
+				layui.use('layer', function(){
+					layer.alert("Invalid device ticket!",{title: "Warnning!", btn: ['OK']});
+				})
+			}else{
+				layui.use('layer', function(){
+					layer.alert("ERROR!",{title: "Warnning!", btn: ['OK']});
+				})
+			}
+
+		}
+	});
+}
+
+function deleteModelCloud(){
+	var algo=$("#algo option:selected").val();
+	if(algo=='default'){
+		layui.use('layer', function(){
+			layer.alert("Please select an algorithm!",{title: "Information", btn: ['OK']});
+		})
+		return;
+	}
+	$.ajax({ 
+		type: 'DELETE', 
+		//url: 'https://cloud-api.ifan.dev:8/api/device/'+ uuid +'/model/'+algo,
+		url: cloudApiUrl + '/api/device/'+ uuid +'/model/'+algo,
+		headers: {
+			'Authorization': Authorization			
+		},
+		success:function(data, status, response){
+		    layui.use('layer', function(){
+				layer.alert("Delete Successfully!",{title: "Information", btn: ['OK']});
+			})
+		},
+		error:function(jqXHR, textStatus, errorThrown){
+			if(jqXHR.status == 400){
+				layui.use('layer', function(){
+					layer.alert("UUID is NOT Valid!",{title: "Warnning!", btn: ['OK']});
+				})
+			}else if(jqXHR.status == 401){
+				layui.use('layer', function(){
+					layer.alert("Invalid device ticket!",{title: "Warnning!", btn: ['OK']});
+				})
+			}else{
+				layui.use('layer', function(){
+					layer.alert("ERROR!",{title: "Warnning!", btn: ['OK']});
+				})
+			} 
+		}
+	}); 
+}
+
+function deleteModelALL(){
+	$.ajax({ 
+		type: 'DELETE', 
+		//url: 'https://cloud-api.ifan.dev:8/api/device/'+ uuid +'/model',
+		url: cloudApiUrl + '/api/device/'+ uuid +'/model',
+		headers: {
+			'Authorization': Authorization			
+		},
+		success:function(data, status, response){
+		    layui.use('layer', function(){
+				layer.alert("Delete Successfully!",{title: "Information", btn: ['OK']});
+			})
+		},
+		error:function(jqXHR, textStatus, errorThrown){
+			if(jqXHR.status == 400){
+				layui.use('layer', function(){
+					layer.alert("UUID is NOT Valid!",{title: "Warnning!", btn: ['OK']});
+				})
+			}else if(jqXHR.status == 401){
+				layui.use('layer', function(){
+					layer.alert("Invalid device ticket!",{title: "Warnning!", btn: ['OK']});
+				})
+			}else{
+				layui.use('layer', function(){
+					layer.alert("ERROR!",{title: "Warnning!", btn: ['OK']});
+				})
+			}
+		}
+	}); 
+}
+
+function uploadModelCloud(){
+	var modelFile = new FormData();
+	var model = document.getElementById("model").files[0];
+	if(!model){
+		layui.use('layer', function(){
+			layer.alert("Please select a model file!",{title: "Information", btn: ['OK']});
+		})
+		return;		
+	}
+	var fileType = model.name.substring(model.name.lastIndexOf("."));
+	if(fileType != ".h5" && fileType != ".randomforest"){
+		layui.use('layer', function(){
+			layer.alert("Only .h5 or .randomforest File can be uploaded!",{title: "Information", btn: ['OK']});
+		})
+		return;		
+	}
+	var algo=$("#algo option:selected").val();
+	if(algo=='default'){
+		layui.use('layer', function(){
+			layer.alert("Please select an algorithm!",{title: "Information", btn: ['OK']});
+		})
+		return;
+	}
+	modelFile.append('model', model);
+	$.ajax({ 
+		crossDomain:true,
+		xhrFields: {
+    		withCredentials: true
+		},
+		type: 'PUT', 
+		//url: 'https://cloud-api.ifan.dev:8/api/device/'+ uuid +'/model/'+algo,
+		url: cloudApiUrl + '/api/device/'+ uuid +'/model/'+algo,
+		contentType: false,
+		processData: false,
+        headers: {
+			//'Content-Type': 'multipart/form-data',
+			//'Authorization': Authorization
+		},
+		data: modelFile,
+		xhr: function xhr() {
+            var xhr = $.ajaxSettings.xhr();
+            if (xhr.upload) {
+                xhr.upload.addEventListener('progress', function (e) {
+                    var percentage = parseInt(e.loaded / e.total * 100);
+					$("#uploadProgress").html(percentage+'%');
+					layui.use('element', function(){
+						var element = layui.element;
+						$('#uploadBar').attr('lay-percent',percentage+'%');
+                    	element.init();
+					});
+                }, false);
+            }
+        	return xhr;
+		},
+		beforeSend:function(){
+			$("#uploadProgress").html(0+'%');
+			layui.use('element', function(){
+				var element = layui.element;
+				$('#uploadBar').attr('lay-percent',0+'%');
+                element.init();
+			});
+			$("#uploadProgressDiv").css('display','block'); 
+		},
+		success:function(data, status, response){
+		    layui.use('layer', function(){
+				layer.alert("Upload Successfully!",{title: "Information", btn: ['OK']});
+			})
+			$("#uploadProgressDiv").css('display','none'); 
+		},
+		error:function(jqXHR, textStatus, errorThrown){
+			if(jqXHR.status == 403){
+				layui.use('layer', function(){
+					layer.alert("Permission denied!",{title: "Warnning!", btn: ['OK']});
+				})
+			}else if(jqXHR.status == 401){
+				layui.use('layer', function(){
+					layer.alert("Invalid device ticket!",{title: "Warnning!", btn: ['OK']});
+				})
+			}else{
+			    layui.use('layer', function(){
+					layer.alert("Upload failed!",{title: "Information", btn: ['OK']});
+				})
+			}
+
+			$("#uploadProgressDiv").css('display','none'); 
+		}
+	}); 	
+}
+
+function uploadBaseModelCloud(){
+	var modelFile = new FormData();
+	var model = document.getElementById("model").files[0];
+	if(!model){
+		layui.use('layer', function(){
+			layer.alert("Please select a model file!",{title: "Information", btn: ['OK']});
+		})
+		return;		
+	}
+	var fileType = model.name.substring(model.name.lastIndexOf("."));
+	if(fileType != ".h5" && fileType != ".randomforest"){
+		layui.use('layer', function(){
+			layer.alert("Only .h5 or .randomforest File can be uploaded!",{title: "Information", btn: ['OK']});
+		})
+		return;		
+	}
+	var algo=$("#algo option:selected").val();
+	if(algo=='default'){
+		layui.use('layer', function(){
+			layer.alert("Please select an algorithm!",{title: "Information", btn: ['OK']});
+		})
+		return;
+	}
+	modelFile.append('model', model);
+	$.ajax({ 
+		crossDomain:true,
+		xhrFields: {
+    		withCredentials: true
+		},
+		type: 'PUT', 
+		//url: 'https://cloud-api.ifan.dev:8/api/model/'+algo,
+		url: cloudApiUrl + '/api/model/' + algo,
+		data: modelFile,
+		contentType: false,
+		processData: false,
+        headers: {
+			//'Content-Type': 'multipart/form-data',
+			//'Authorization': Authorization
+		},
+		xhr: function xhr() {
+            var xhr = $.ajaxSettings.xhr();
+            if (xhr.upload) {
+                xhr.upload.addEventListener('progress', function (e) {
+                    var percentage = parseInt(e.loaded / e.total * 100);
+					$("#uploadBaseProgress").html(percentage+'%');
+					layui.use('element', function(){
+						var element = layui.element;
+						$('#uploadBaseBar').attr('lay-percent',percentage+'%');
+                    	element.init();
+					});
+                }, false);
+            }
+        	return xhr;
+		},
+		beforeSend:function(){
+			$("#uploadBaseProgress").html(0+'%');
+			layui.use('element', function(){
+				var element = layui.element;
+				$('#uploadBaseBar').attr('lay-percent',0+'%');
+                element.init();
+			});
+			$("#uploadBaseProgressDiv").css('display','block'); 
+			
+		},
+		success:function(data, status, response){
+		    layui.use('layer', function(){
+				layer.alert("Upload Successfully!",{title: "Information", btn: ['OK']});
+			})
+			$("#uploadBaseProgressDiv").css('display','none'); 
+		},
+		error:function(jqXHR, textStatus, errorThrown){
+			if(jqXHR.status == 403){
+				layui.use('layer', function(){
+					layer.alert("Permission denied!",{title: "Warnning!", btn: ['OK']});
+				})
+			}else if(jqXHR.status == 401){
+				layui.use('layer', function(){
+					layer.alert("Invalid device ticket!",{title: "Warnning!", btn: ['OK']});
+				})
+			}else{
+				layui.use('layer', function(){
+					layer.alert("Upload failed!",{title: "Information", btn: ['OK']});
+				})
+			}
+		    
+			$("#uploadBaseProgressDiv").css('display','none'); 
+		}
+	}); 	
+}
+
+function getBaseModelCloud(){
+	var algo=$("#algo option:selected").val();
+	if(algo=='default'){
+		layui.use('layer', function(){
+			layer.alert("Please select an algorithm!",{title: "Information", btn: ['OK']});
+		})
+		return;
+	}
+	//var url = 'https://cloud-api.ifan.dev:8/api/model'+algo;
+	var url = cloudApiUrl + '/api/model/'+algo;
+	var xhr;
+	if (window.XMLHttpRequest) {
+  		xhr = new XMLHttpRequest();
+	} else {
+ 		xhr = new ActiveXObject("Microsoft.XMLHTTP");
+	}
+	xhr.open('GET', url, true);
+	xhr.setRequestHeader('Authorization', Authorization);
+    xhr.responseType = "blob";
+    xhr.onload = function () {
+        if (this.status == 200) {
+            var modelBlob = this.response;
+			let	blob = new Blob([modelBlob]);
+        	let url = window.URL.createObjectURL(blob);
+        	let link = document.createElement("a");
+        	link.style.display = "none";
+        	link.href = url;
+        	link.setAttribute("download", algo+'BaseModel.h5');
+        	//link.setAttribute("download", algoList[algo].base.substring(algoList[algo].base.lastIndexOf("/")+1));
+        	document.body.appendChild(link);
+        	link.click();
+        	document.body.removeChild(link);
+			window.URL.revokeObjectURL(url);
+		}else if(this.status == 401){
+			layui.use('layer', function(){
+				layer.alert("Invalid device ticket!",{title: "Warnning!", btn: ['OK']});
+			})
+		}else{
+			layui.use('layer', function(){
+				layer.alert("Download failed!",{title: "Warnning!", btn: ['OK']});
+			})	
+		}
+    };
+
+    xhr.send();
+}
+
+function getModelDevice(){
+	var algo;
+    $.ajax({
+        type: 'GET',
+        //url: 'https://device-api.ifan.dev:8' + '/',
+        url: deviceApiUrl + '/',
+        headers: {
+            'Authorization': Authorization
+        },
+        dataType: 'json',
+        success: function (data) {
+        	algo=data.algorithm.name;
+        }
+    })
+	
+	//var url = 'https://device-api.ifan.dev:8/model';
+	var url = deviceApiUrl + '/model';
+	var xhr;
+	if (window.XMLHttpRequest) {
+  		xhr = new XMLHttpRequest();
+	} else {
+ 		xhr = new ActiveXObject("Microsoft.XMLHTTP");
+	}
+	xhr.open('GET', url, true);
+	//xhr.setRequestHeader('Authorization', Authorization);
+    xhr.responseType = "blob";
+    xhr.onload = function () {
+        if (this.status == 200) {
+            var modelBlob = this.response;
+			let	blob = new Blob([modelBlob]);
+        	let url = window.URL.createObjectURL(blob);
+        	let link = document.createElement("a");
+        	link.style.display = "none";
+        	link.href = url;
+        	link.setAttribute("download", 'DeviceModel.h5');
+        	//link.setAttribute("download", 'DeviceModel'+algoList[algo].base.substring(algoList[algo].base.lastIndexOf(".")));
+        	document.body.appendChild(link);
+        	link.click();
+        	document.body.removeChild(link);
+			window.URL.revokeObjectURL(url);	
+		}else if(this.status == 401){
+			layui.use('layer', function(){
+				layer.alert("Invalid device ticket!",{title: "Warnning!", btn: ['OK']});
+			})
+		}else{
+			layui.use('layer', function(){
+				layer.alert("Download failed!",{title: "Warnning!", btn: ['OK']});
+			})	
+		}
+    };
+    xhr.send();
+}
+
+$('#update').click(function(){
+	updateModel();
+})
+
+$('#train').click(function(){
+	trainModel();
+})
+
+$('#deleteDevice').click(function(){
+	layer.open({
+		title:"Warnning!",
+		type:0,
+		btn:["Yes","No"],
+		content:"Delete local model from device?",
+		btn1:function(){
+			deleteModelDevice();
+		}
+	})
+})
+
+$('#delete').click(function(){
+	layer.open({
+		title:"Warnning!",
+		type:0,
+		btn:["Yes","No"],
+		content:"Delete the model of selected algorithm?",
+		btn1:function(){
+			deleteModelCloud();
+		}
+	})
+})
+
+$('#deleteAll').click(function(){
+	layer.open({
+		title:"Warnning!",
+		type:0,
+		btn:["Yes","No"],
+		content:"Delete the model of ALL algorithms?",
+		btn1:function(){
+			deleteModelALL();
+		}
+	})
+})
+
+$('#upload').click(function(){
+	uploadModelCloud();
+})
+
+$('#uploadBase').click(function(){
+	uploadBaseModelCloud();
+})
+
+$('#getBase').click(function(){
+	getBaseModelCloud();
+})
+
+$('#getModel').click(function(){
+	getModelDevice();
+})
+
+$("[type=file]").on("change", function(){
+  var file = this.files[0].name;
+  var dflt = $(this).attr("placeholder");
+  if($(this).val()!=""){
+    $(this).next().text(file);
+  } else {
+    $(this).next().text(dflt);
+  }
+});
+</script>
+
+<style>
+	@import url(https://fonts.googleapis.com/css?family=PT+Sans:400,700);
+
+	html {
+		background: #f1f2f7;
+	}
+
+	body {
+		font-family: "PT Sans";
+		/**text-align: center;**/
+		color: darken(#f1f2f7, 65%);
+	}
+
+	h1 {
+		font-size: 2em;
+	}
+
+	h2 {
+		font-size: 1.5em;
+		color: darken(#f1f2f7, 25%);
+	}
+
+	[type=file] {
+		position: absolute;
+		filter: alpha(opacity=0);
+		opacity: 0;
+	}
+
+	input,
+	[type=file]+label {
+		border: 1px solid #CCC;
+		border-radius: 3px;
+		text-align: left;
+		padding: 10px;
+		width: 150px;
+		margin: 0;
+		left: 0;
+		position: relative;
+		
+	}
+
+	[type=file]+label {
+		top: 0.1em;
+		text-align: center;
+		/* Decorative */
+		background: #333;
+		color: #fff;
+		border: none;
+		cursor: pointer;
+	}
+
+	[type=file]+label:hover {
+		background: #3399ff;
+	}
+
+	fieldset {
+  		font-size: 1em;
+  		border: 2px solid #000;
+  		padding: 1.5em;
+  		border-radius: 0.5em;
+	}
+
+	legend {
+ 		color: #000;
+  		background: #f1f2f7;
+  		/*padding: 0.25em 0.25em;*/
+  		border-radius: 1em;
+		font-size: 1.7em;
+	}
+</style>
+
+</html>

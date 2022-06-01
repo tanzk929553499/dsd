@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>Data</title>
+    <link rel="stylesheet" href="./layui/css/layui.css">
+    <script src="js/jquery-3.5.1.js"></script>
+    <script src="./layui/layui.js"></script>
+</head>
+
+<body>
+    <div id="p2" class="layui-anim layui-anim-upbit"
+        style="position: absolute;top: 0;bottom: 0;left: 0;right: 0;margin: auto;height: 80%; width: 40%;">
+        <!--
+    <div class="layui-form-item">
+            <label class="layui-form-label">用户邮箱</label>
+            <div class="layui-input-block">
+                <input id="email" type="text" required lay-verify="required" placeholder="邮箱" autocomplete="off"
+                    class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button id="reset_email" class="layui-btn" lay-submit lay-filter="formDemo">重置邮箱</button>
+                <button id="delete_email" class="layui-btn" lay-submit lay-filter="formDemo">清除邮箱</button>
+            </div>
+        </div>
+-->
+        <fieldset>
+            <legend>Data Collection</legend>
+            <center>
+
+                <!--<div class="layui-card-header">采集微调数据</div>-->
+
+                <div class="layui-col-md7">
+                    <div class="layui-panel">
+                        <div id="motion_help" style="padding: 50px 30px;">action</div>
+                    </div>
+                </div>
+
+                <div class="layui-col-md7">
+                    <div class="layui-progress layui-progress-big" lay-filter="progress1" lay-showPercent="true">
+                        <div id="progress_bar" class="layui-progress-bar" lay-percent="0%"></div>
+                    </div>
+                </div>
+                <br>
+                <button id="start_collect" type="button" class="layui-btn layui-btn-normal"
+                    style="margin-top: 30pt;margin-left: 30pt;">Start Collection</button>
+
+
+                <br>
+                <div class="layui-col-md12">
+                    <button id="delete_local_data" type="button" class="layui-btn layui-btn-normal"
+                        style="margin-top: 30pt;margin-left: 30pt;">Delete Device Data</button>
+                </div>
+
+
+            </center>
+        </fieldset>
+
+        <fieldset>
+            <legend>Data Management</legend>
+            <center>
+
+                <div class="layui-row">
+
+                    <button id="upload_data" type="button" class="layui-btn layui-btn-normal"
+                        style="margin-top: 30pt;margin-left: 30pt;">Upload Data</button>
+
+
+                    <button id="delete_cloud_data" type="button" class="layui-btn layui-btn-normal"
+                        style="margin-top: 30pt;margin-left: 30pt;">Delete Cloud Data</button>
+
+
+
+
+                </div>
+
+            </center>
+        </fieldset>
+
+        <fieldset id="p3_ad">
+            <legend>Administrator Function</legend>
+            <center>
+                <div class="layui-row">
+
+                    <button id="load_cloud_data" type="button" class="layui-btn layui-btn-normal"
+                        style="margin-top: 30pt;margin-left: 30pt;">Download Cloud Data</button>
+
+                </div>
+
+            </center>
+        </fieldset>
+
+
+    </div>
+
+    </div>
+</body>
+
+<script>
+    //JS 
+    var uuid;
+    var Authorization;
+    var cloudUrl = 'https://cloud-api.ifan.dev:8';
+    var deviceUrl = 'https://device-api.ifan.dev:8';
+
+
+
+
+
+    $(document).ready(function () {
+
+        //uuid = '75442486-0878-440c-9db1-a7006c25a39f';
+        //Authorization = "ticket"
+        uuid = localStorage.getItem("uuid");
+        Authorization = localStorage.getItem("ticket");
+        isadmin = localStorage.getItem("isadmin");
+        timestamp = localStorage.getItem("timestamp");
+        if (isadmin == 'false') {
+            $("#p3_ad").hide();
+        }
+
+        /*
+                function GetEmail() {
+                    $.ajax({
+                        type: 'GET',
+                        url: 'https://cloud-api.ifan.dev:8' + '/device/' + uuid + '/email',
+                        headers: {
+                            'Authorization': Authorization
+                        },
+                        dataType: 'json',
+                        success: function (data) {
+                            $("#email").attr("value", data.email);
+                            localStorage.setItem('email', data.email);
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            if (XMLHttpRequest.status == 400) {
+                                $("#email").attr("value", "");
+                                layer.msg('email is not set', {
+                                    time: 20000, //20s后自动关闭
+                                    btn: ['OK']
+                                });
+                            }
+                        }
+                    })
+                }
+
+                function SetEmail(email) {
+                    let einfo = JSON.stringify({
+                        "email": decodeURIComponent(email)
+                    });
+                    $.ajax({
+                        type: 'POST',
+                        url: 'https://cloud-api.ifan.dev:8' + '/device/' + uuid + '/email',
+                        headers: {
+                            'Authorization': Authorization,
+                            'Content-Type': "application/json",
+                            //'contenttype': "application/json",
+                        },
+                        data: einfo,
+                        success: function () {
+                            localStorage.setItem('email', email);
+                            $("#email").attr("value", email);
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            if (XMLHttpRequest.status == 400) {
+                                $("#email").attr("value", localStorage.getItem("email"));
+                                layer.msg('email is invalid', {
+                                    time: 20000, //20s后自动关闭
+                                    btn: ['OK']
+                                });
+                            }
+                        }
+                    })
+                }
+
+
+                function DeleteEmail() {
+                    $.ajax({
+                        type: 'DELETE',
+                        url: 'https://cloud-api.ifan.dev:8' + '/device/' + uuid + '/email',
+                        headers: {
+                            'Authorization': Authorization
+                        },
+                        success: function () {
+                            //alert("111111111")
+                            $("#email").attr("value", "");
+                        }
+                    })
+                }
+        */
+        function GetMotion() {
+            $.ajax({
+                type: 'GET', //'GET',
+                url: deviceUrl + '/calibration/pending',
+                headers: {
+                    'Authorization': Authorization
+                },
+                dataType: 'json',
+                success: function (data) {
+                    //alert(JSON.stringify(data));
+                    collect_data(0, data);
+                },
+                error: function (XMLHttpRequest) {
+                    if (XMLHttpRequest.status == 401) {
+                        layer.msg('Invalid device ticket!', {
+                            time: 20000, //20s后自动关闭
+                            btn: ['OK']
+                        });
+                    }
+                }
+            })
+        }
+
+        function collect_data(index, data) {
+            if (index < data.length) {
+                info = data[index];
+                layer.msg(info.display + ": " + info.desc, {
+                    time: 999999999,
+                    btn: ['OK', 'Cancel'],
+                    btn1: function (index_in, layero) {
+                        PutData(index, data, info);
+                        layer.close(index_in);
+                    }
+                });
+            } else {
+                layer.msg("End of data collection", {
+                    time: 999999999,
+                    btn: ['OK'],
+                });
+            }
+        }
+
+        function PutData(index, data, info) {
+            $.ajax({
+                type: 'POST',
+                url: deviceUrl + '/calibration/' + info.name,
+                headers: {
+                    'Authorization': Authorization
+                },
+                success: function () {
+                    $("#motion_help").text(info.display + ": " + info.desc);
+                    layui.use(['element'], function () {
+                        var element = layui.element;
+                        var i = 0;
+                        var timer = setInterval(function () {
+                            let percent = parseInt(i / info.duration * 100);
+                            $("#progress_bar").attr("lay-percent", percent + "%")
+                            element.init();
+                            element.progress('progress1', percent + "%");
+                            i++;
+                            if (i > info.duration) {
+                                $("#progress_bar").attr("lay-percent", "0%")
+                                element.init();
+                                element.progress('progress1', "0%");
+                                clearInterval(timer);
+                            }
+                        }, 1000);
+                        setTimeout(function () {
+                            collect_data(index + 1, data);
+                        }, info.duration * 1000 + 3000);
+                    })
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    if (XMLHttpRequest.status == 409) {
+                        layer.msg('the previous calibration is not finished', {
+                            time: 20000, //20s后自动关闭
+                            btn: ['OK'],
+                            btn1: function (index_in, layero) {
+                                collect_data(index, data)
+                                layer.close(index_in);
+                            }
+                        });
+                    } else if (XMLHttpRequest.status == 400) {
+                        layer.msg('the motion name is invalid, next motion', {
+                            time: 20000, //20s后自动关闭
+                            btn: ['OK'],
+                            btn1: function (index_in, layero) {
+                                collect_data(index + 1, data)
+                                layer.close(index_in);
+                            }
+                        });
+                    } else if (XMLHttpRequest.status == 401) {
+                        layer.msg('Invalid device ticket!', {
+                            time: 20000, //20s后自动关闭
+                            btn: ['OK']
+                        });
+                    } else {
+                        layer.msg('error', {
+                            time: 20000, //20s后自动关闭
+                            btn: ['OK']
+                        });
+                    }
+                }
+            })
+        }
+
+        /*
+                function UploadData1() {
+                    $.ajax({
+                        type: 'HEAD',
+                        url: 'https://cloud-api.ifan.dev:8' + '/device/' + uuid + '/calibration',
+                        headers: {
+                            'Authorization': Authorization
+                        },
+                        success: function (data, textStatus, XMLHttpRequest) {
+                            if (XMLHttpRequest.status == 200) {
+                                var url = 'https://device.api.ifan.dev:8/' + 'calibration';
+                                //var url = 'updateTest';
+                                var xhr;
+                                if (window.XMLHttpRequest) {
+                                    xhr = new XMLHttpRequest();
+                                } else {
+                                    xhr = new ActiveXObject("Microsoft.XMLHTTP");
+                                }
+                                xhr.open('GET', url, true);
+                                xhr.setRequestHeader('Authorization', Authorization);
+                                xhr.responseType = "blob";
+                                xhr.onload = function () {
+                                    if (this.status == 200) {
+                                        var DataBlob = this.response;
+                                        var DataFile = new FormData();
+                                        DataFile.append('calibration_data',
+                                            new window.File([DataBlob], 'model.h5'));
+                                        var signature = xhr.getResponseHeader('Signature');
+                                        $.ajax({
+                                            type: 'PUT',
+                                            url: 'https://cloud-api.ifan.dev:8' + '/device/' +
+                                                uuid + '/calibration',
+                                            processData: false,
+                                            contentType: false,
+                                            headers: {
+                                                //'Content-Type': 'multipart/form-data',
+                                                'Signature': signature,
+                                                'Authorization': Authorization
+                                            },
+                                            data: DataFile,
+                                            success: function (data, status, response) {
+                                                layer.msg(
+                                                    'Successfully upload calibration data', {
+                                                        time: 20000, //20s后自动关闭
+                                                        btn: ['OK']
+                                                    });
+                                            },
+                                            error: function (jqXHR, textStatus, errorThrown) {
+                                                if (jqXHR.status == 400) {
+                                                    layer.msg(
+                                                        'the signature is not valid.', {
+                                                            time: 20000, //20s后自动关闭
+                                                            btn: ['OK']
+                                                        });
+                                                }
+                                            }
+                                        })
+                                    }
+                                }
+                                
+                                $.ajax({
+                                    type: 'GET',
+                                    url: '/calibration',
+                                    processData: false,
+                                    contentType: false,
+                                    xhrFields: {
+                                        responseType: 'blob'
+                                    },
+                                    success: function (data, textStatus, XMLHttpRequest) {
+                                        let blobdata = new Blob([data]);
+                                        let dataFile = new FormData();
+                                        dataFile.append('calibration', blobdata);
+                                        let signature = response.getResponseHeader('Signature');
+                                        $.ajax({
+                                            type: 'PUT',
+                                            url: 'https://cloud-api.ifan.dev:8' + '/device/' + uuid + '/calibration',
+                                            processData: false,
+                                            contentType: false,
+                                            headers: {
+                                                'Content-Type': 'multipart/form-data',
+                                                'Signature': signature,
+                                                'Authorization': Authorization
+                                            },
+                                            data: dataFile,
+                                        })
+                                    },
+                                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                        if (XMLHttpRequest.status == 404) {
+                                            //$.messager.alert('提示', 'no data is collected','info');
+                                            layer.msg('no data is collected', {
+                                                time: 20000, //20s后自动关闭
+                                                btn: ['OK']
+                                            });
+                                        }
+                                    }
+                                    
+                                })
+                            }
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            if (XMLHttpRequest.status == 404) {
+                                //$.messager.alert('提示', 'data is not found', 'info');
+                                layer.msg('data is not found', {
+                                    time: 20000, //20s后自动关闭
+                                    btn: ['OK']
+                                });
+                            }
+                        }
+                    })
+                }
+        */
+        function UploadData() {
+            var url = deviceUrl + '/calibration';
+            //var url = 'updateTest';
+            var xhr;
+            if (window.XMLHttpRequest) {
+                xhr = new XMLHttpRequest();
+            } else {
+                xhr = new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            xhr.open('GET', url, true);
+            xhr.setRequestHeader('Authorization', Authorization);
+            xhr.responseType = "blob";
+            //alert(11111);
+            xhr.onload = function () {
+                if (this.status == 200) {
+                    var DataBlob = this.response;
+                    var DataFile = new FormData();
+                    //DataFile.append('calibration', new window.File([DataBlob], 'model.h5'));
+                    DataFile.append('calibration', DataBlob, {
+                        type: 'application/x-tar+gzip'
+                    });
+                    let signature = xhr.getResponseHeader('signature');
+                    //alert(signature);
+
+                    /*let blob = new Blob([DataBlob]);
+                    let url = window.URL.createObjectURL(blob);
+                    let link = document.createElement("a");
+                    link.style.display = "none";
+                    link.href = url;
+                    link.setAttribute("download", 'model.h5');
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link); // 下载完成移除元素
+                    window.URL.revokeObjectURL(url);*/
+                    $.ajax({
+                        type: 'GET', //'GET',
+                        url: deviceUrl + '/calibration/pending',
+                        headers: {
+                            'Authorization': Authorization
+                        },
+                        dataType: 'json',
+                        success: function (data) {
+                            //alert(JSON.stringify(data));
+                            if (data.length == 0) {
+                                $.ajax({
+                                    type: 'PUT',
+                                    url: cloudUrl + '/api/device/' +
+                                        uuid + '/calibration',
+                                    processData: false,
+                                    contentType: false,
+                                    headers: {
+                                        //'Content-Type': 'multipart/form-data',
+                                        'Signature': signature,
+                                        'Authorization': Authorization
+                                    },
+                                    data: DataFile,
+
+                                    success: function (data, status, response) {
+                                        layer.msg(
+                                            'Successfully upload calibration data', {
+                                                time: 20000, //20s后自动关闭
+                                                btn: ['OK']
+                                            });
+                                    },
+                                    error: function (jqXHR, textStatus, errorThrown) {
+                                        if (jqXHR.status == 400) {
+                                            layer.msg(
+                                                'the signature is not valid.', {
+                                                    time: 20000, //20s后自动关闭
+                                                    btn: ['OK']
+                                                });
+                                        }
+
+                                        if (jqXHR.status == 401) {
+                                            layer.msg(
+                                                'Invalid device ticket!', {
+                                                    time: 20000, //20s后自动关闭
+                                                    btn: ['OK']
+                                                });
+                                        }
+
+                                    }
+                                })
+                            } else {
+                                layer.msg(
+                                    'data collection is not finished.', {
+                                        time: 20000, //20s后自动关闭
+                                        btn: ['OK']
+                                    });
+                            }
+                        }
+                    })
+                } else if (this.status == 404) {
+                    layer.msg(
+                        'no data is collected.', {
+                            time: 20000, //20s后自动关闭
+                            btn: ['OK']
+                        });
+                } else if (this.status == 401) {
+                    layer.msg(
+                        'Invalid device ticket!', {
+                            time: 20000, //20s后自动关闭
+                            btn: ['OK']
+                        });
+                }
+            }
+            xhr.send();
+        }
+
+        function DeleteCloudData() {
+            $.ajax({
+                type: 'DELETE',
+                url: cloudUrl + '/api/device/' + uuid + '/calibration',
+                headers: {
+                    'Authorization': Authorization
+                },
+                success: function (data, textStatus, XMLHttpRequest) {
+                    layer.msg('delete successfully', {
+                        time: 20000, //20s后自动关闭
+                        btn: ['OK']
+                    });
+                },
+                error: function (XMLHttpRequest) {
+                    if (XMLHttpRequest.status == 401) {
+                        layer.msg('Invalid device ticket!', {
+                            time: 20000, //20s后自动关闭
+                            btn: ['OK']
+                        });
+                    }
+                }
+            })
+        }
+
+        function DeleteLocalData() {
+            $.ajax({
+                type: 'DELETE',
+                url: deviceUrl + '/calibration',
+                headers: {
+                    'Authorization': Authorization
+                },
+                success: function (data, textStatus, XMLHttpRequest) {
+                    layer.msg('delete successfully', {
+                        time: 20000, //20s后自动关闭
+                        btn: ['OK']
+                    });
+                },
+                error: function (XMLHttpRequest) {
+                    if (XMLHttpRequest.status == 401) {
+                        layer.msg('Invalid device ticket!', {
+                            time: 20000, //20s后自动关闭
+                            btn: ['OK']
+                        });
+                    }
+                }
+            })
+        }
+
+        function GetCloudData() {
+            /*$.ajax({
+                type: 'HEAD',
+                url: 'https://cloud-api.ifan.dev:8' + '/api/device/' + uuid + '/calibration',
+                headers: {
+                    'Authorization': Authorization
+                },
+                success: function (data, textStatus, XMLHttpRequest1) {*/
+            var url = cloudUrl + '/api/device/' + uuid +
+                '/calibration';
+            //var url = 'updateTest';
+            var xhr1;
+            if (window.XMLHttpRequest) {
+                xhr1 = new XMLHttpRequest();
+
+            } else {
+                xhr1 = new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            xhr1.open('GET', url, true);
+            xhr1.setRequestHeader('Authorization', Authorization);
+            xhr1.withCredentials = true;
+            xhr1.responseType = "blob";
+            xhr1.onload = function () {
+                if (this.status == 200) {
+                    layer.msg('Start Download', {
+                        time: 20000, //20s后自动关闭
+                        btn: ['OK']
+                    });
+                    var DataBlob = this.response;
+                    var DataFile = new FormData();
+                    DataFile.append('model', new window.File([DataBlob], 'data.tar'));
+                    var signature = xhr1.getResponseHeader('Signature');
+
+                    let blob = new Blob([DataBlob]);
+                    let url = window.URL.createObjectURL(blob);
+                    let link = document.createElement("a");
+                    link.style.display = "none";
+                    link.href = url;
+                    link.setAttribute("download", 'data.tar');
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link); // 下载完成移除元素
+                    window.URL.revokeObjectURL(url);
+                } else if (this.status == 404) {
+                    layer.msg('there’s no data collected', {
+                        time: 20000, //20s后自动关闭
+                        btn: ['OK']
+                    });
+                } else if (this.status == 403) {
+                    layer.msg('Permission denied', {
+                        time: 20000, //20s后自动关闭
+                        btn: ['OK']
+                    });
+                } else if (this.status == 401) {
+                    layer.msg('Invalid administrator session!', {
+                        time: 20000, //20s后自动关闭
+                        btn: ['OK']
+                    });
+                }
+            }
+            xhr1.send();
+            /*},
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    if (XMLHttpRequest.status == 404) {
+                        //$.messager.alert('提示', 'data is not found', 'info');
+                        layer.msg('data is not found', {
+                            time: 20000, //20s后自动关闭
+                            btn: ['OK']
+                        });
+                    }
+                }
+            })*/
+            /*
+            $.ajax({
+                crossDomain: true,
+                xhrFields: {
+                    withCredentials: true
+                },
+                type: 'GET',
+                url: 'https://cloud-api.ifan.dev:8' + '/device/' + uuid + '/calibration',
+                processData: false,
+                contentType: false,
+                xhrFields: {
+                    responseType: 'blob'
+                },
+                success: function (data, textStatus, XMLHttpRequest) {
+                    let blobdata = new Blob([data]);
+                },
+                error: function () {
+                    if (XMLHttpRequest.status == 404) {
+                        //$.messager.alert('提示', 'no data collected', 'info');
+                        layer.msg('no data collected', {
+                            time: 20000, //20s后自动关闭
+                            btn: ['OK']
+                        });
+                    }
+                }
+            })
+            */
+        }
+        /*
+                GetEmail();
+
+
+                $("#reset_email").click(function () {
+                    email = $("#email").val();
+                    SetEmail(encodeURIComponent(email));
+                })
+
+                $("#delete_email").click(function () {
+                    email = $("#email").attr("value", "");
+                    DeleteEmail();
+                })
+        */
+        $("#start_collect").click(function () {
+            GetMotion();
+        })
+
+        $("#upload_data").click(function () {
+            UploadData();
+        })
+
+        $("#delete_cloud_data").click(function () {
+            DeleteCloudData();
+        })
+
+        $("#delete_local_data").click(function () {
+            DeleteLocalData();
+        })
+
+        $("#load_cloud_data").click(function () {
+            GetCloudData();
+        })
+    })
+</script>
+<style>
+    @import url(https://fonts.googleapis.com/css?family=PT+Sans:400,700);
+
+    html {
+        background: #f1f2f7;
+
+    }
+
+    body {
+        font-family: "PT Sans";
+        /**text-align: center;**/
+        color: darken(#f1f2f7, 65%);
+    }
+
+    h1 {
+        font-size: 2em;
+    }
+
+    h2 {
+        font-size: 1.5em;
+        color: darken(#f1f2f7, 25%);
+    }
+
+    [type=file] {
+        position: absolute;
+        filter: alpha(opacity=0);
+        opacity: 0;
+    }
+
+
+
+    [type=file]+label {
+        top: 0.1em;
+        text-align: center;
+        /* Decorative */
+        background: #333;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+    }
+
+    [type=file]+label:hover {
+        background: #3399ff;
+    }
+
+    fieldset {
+        font-size: 1em;
+        border: 2px solid #000;
+        padding: 1.5em;
+        border-radius: 0.5em;
+    }
+
+    legend {
+        color: #000;
+        background: #f2f2f2;
+        /*padding: 0.25em 0.25em;*/
+        border-radius: 1em;
+        font-size: 1.7em;
+    }
+</style>
+</body>
+
+</html>

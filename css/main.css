@@ -1,0 +1,9 @@
+body {margin:0;}
+
+
+div#content iframe {
+    position : fixed;
+    width : 85%;
+    left : 15%;
+    height : 100%;
+}

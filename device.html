@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>Device</title>
+    <link rel="stylesheet" href="./layui/css/layui.css">
+    <script src="js/jquery-3.5.1.js"></script>
+    <script src="./layui/layui.js"></script>
+</head>
+
+<body>
+    <div id="p1" class="layui-anim layui-anim-upbit"
+        style="position: absolute;top: 0;bottom: 0;left: 0;right: 0;margin: auto;height: 80%; width: 40%;">
+
+        <fieldset>
+            <legend>Email Management</legend>
+            <center>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">User Email</label>
+                    <div class="layui-input-block">
+                        <input id="email" type="text" required lay-verify="required" placeholder="Email"
+                            autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+
+                    <button id="reset_email" class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo">Modify
+                        Email</button>
+                    <button id="delete_email" class="layui-btn layui-btn-normal" lay-submit lay-filter="formDemo">Clear
+                        Email</button>
+
+                </div>
+            </center>
+        </fieldset>
+
+        <fieldset>
+            <legend>Device Information</legend>
+            <center>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">ID</label>
+                    <div class="layui-input-block">
+                        <input id="ID" type="text" disabled=disabled name="id" required lay-verify="required"
+                            placeholder="Device Unique ID" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Battery</label>
+                    <div class="layui-input-block">
+                        <input id="battery" type="text" disabled=disabled name="battery" required lay-verify="required"
+                            placeholder="Electric Quantity" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-form-item layui-form-text">
+                    <label class="layui-form-label">Charging</label>
+                    <div class="layui-input-block">
+                        <input id="charge" type="text" disabled=disabled name="charge" required lay-verify="required"
+                            placeholder="Charging" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Algorithm</label>
+                    <div class="layui-input-block">
+                        <input id="algorithm" type="text" disabled=disabled name="predict" required
+                            lay-verify="required" placeholder="current algorithm" autocomplete="off"
+                            class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Prediction</label>
+                    <div class="layui-input-block">
+                        <input id="predict" type="text" disabled=disabled name="predict" required lay-verify="required"
+                            placeholder="Predict The Outcome" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+            </center>
+        </fieldset>
+
+        <fieldset>
+            <legend>Administrator Function</legend>
+            <center>
+
+                <div class="layui-form-item">
+                    <button id="delete_cloud_info" type="button" class="layui-btn layui-btn-normal">Delete Cloud
+                        Information</button>
+
+                    <br>
+                    <!--
+                    <div class="layui-input-block">
+                        <input id="cloud_ban_box" type="checkbox" name="like1[read]" >Prohibit the use of cloud
+                        platforms
+                    </div>
+                    -->
+                    <!--
+                        <div class="checkboxTwo">
+                        <input type="checkbox" value="1" id="checkboxTwoInput" name="" />
+                        <label for="checkboxTwoInput"></label>
+                    </div>
+                    -->
+
+                </div>
+
+
+            </center>
+        </fieldset>
+
+
+    </div>
+</body>
+
+<script>
+    //JS 
+    var uuid;
+    var Authorization;
+    var cloudUrl = 'https://cloud-api.ifan.dev:8';
+    var deviceUrl = 'https://device-api.ifan.dev:8';
+    var action = new Array("sit", "stand", "walk", "upstairs", "downstairs", "run");
+
+
+
+    $(document).ready(function () {
+
+        //uuid = '75442486-0878-440c-9db1-a7006c25a39f';
+        //Authorization = "ticket";
+        uuid = localStorage.getItem("uuid");
+        Authorization = localStorage.getItem("ticket");
+        isadmin = localStorage.getItem("isadmin");
+        timestamp = localStorage.getItem("timestamp");
+        if (isadmin == 'false') {
+            $("#p1_ad").hide();
+        }
+        GetDevice();
+        GetEmail();
+        setInterval("GetDevice()", 5000);
+    })
+
+
+    function GetEmail() {
+        $.ajax({
+            type: 'GET',
+            url: cloudUrl + '/api/device/' + uuid + '/email',
+            headers: {
+                'Authorization': Authorization
+            },
+            dataType: 'json',
+            success: function (data) {
+                $("#email").attr("value", data.email);
+                localStorage.setItem('email', data.email);
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                //alert(XMLHttpRequest.status)
+                if (XMLHttpRequest.status == 404) {
+                    $("#email").attr("value", "");
+                    layer.msg('email is not set', {
+                        time: 20000, //20s后自动关闭
+                        btn: ['OK']
+                    });
+                }
+                if (XMLHttpRequest.status == 401) {
+                    $("#email").attr("value", "");
+                    layer.msg('Invalid device ticket!', {
+                        time: 20000, //20s后自动关闭
+                        btn: ['OK']
+                    });
+                }
+            }
+        })
+    }
+
+    function SetEmail(email) {
+        let einfo = JSON.stringify({
+            "email": decodeURIComponent(email)
+        });
+        $.ajax({
+            type: 'POST',
+            url: cloudUrl + '/api/device/' + uuid + '/email',
+            headers: {
+                'Authorization': Authorization,
+                'Content-Type': "application/json",
+            },
+            data: einfo,
+            success: function () {
+                //$("#email").attr("value", email);
+                localStorage.setItem("email", decodeURIComponent(email))
+                layer.msg('Modified successfully', {
+                    time: 20000, //20s后自动关闭
+                    btn: ['OK']
+                });
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                if (XMLHttpRequest.status == 400) {
+                    //alert(localStorage.getItem("email"));
+                    //$("#email").attr("value", localStorage.getItem("email"));
+                    $("#email").val(localStorage.getItem("email"));
+                    layer.msg('email is invalid', {
+                        time: 20000, //20s后自动关闭
+                        btn: ['OK']
+                    });
+                }
+                if (XMLHttpRequest.status == 401) {
+                    //alert(localStorage.getItem("email"));
+                    //$("#email").attr("value", localStorage.getItem("email"));
+                    $("#email").val(localStorage.getItem("email"));
+                    layer.msg('Invalid device ticket!', {
+                        time: 20000, //20s后自动关闭
+                        btn: ['OK']
+                    });
+                }
+            }
+        })
+    }
+
+
+    function DeleteEmail() {
+        $.ajax({
+            type: 'DELETE',
+            url: cloudUrl + '/api/device/' + uuid + '/email',
+            headers: {
+                'Authorization': Authorization
+            },
+            success: function () {
+                //alert("111111111")
+                localStorage.setItem('email', "");
+                //$("#email").attr("value", null);
+                $("#email").val("");
+                layer.msg('Deleted successfully', {
+                    time: 20000, //20s后自动关闭
+                    btn: ['OK']
+                });
+            },
+            error: function (XMLHttpRequest) {
+                if (XMLHttpRequest.status == 401) {
+                    layer.msg('Invalid device ticket!', {
+                        time: 20000, //20s后自动关闭
+                        btn: ['OK']
+                    });
+                }
+            }
+        })
+    }
+
+    function GetDevice() {
+        $.ajax({
+            type: 'GET',
+            url: deviceUrl + '/',
+            headers: {
+                'Authorization': Authorization
+            },
+            dataType: 'json',
+            success: function (data) {
+                /*$("#ID").attr("value", data.id);
+                $("#battery").attr("value", data.battery);
+                $("#charge").attr("value", data.charging);
+                $("#predict").attr("value", data.prediction);*/
+                $("#ID").val(localStorage.getItem("fuuid"));
+                $("#battery").val(data.battery);
+                $("#charge").val(data.charging);
+                $("#algorithm").val(data.algorithm.display);
+                $("#predict").val(action[data.prediction]);
+            },
+            error: function (XMLHttpRequest) {
+                if (XMLHttpRequest.status == 401) {
+                    layer.msg('Invalid device ticket!', {
+                        time: 20000, //20s后自动关闭
+                        btn: ['OK']
+                    });
+                }
+            }
+        })
+    }
+
+    function DeleteDevice() {
+        /*let mydata = JSON.stringify({
+            'ban': IsBan
+        })*/
+        $.ajax({
+            type: 'DELETE',
+            url: cloudUrl + '/api/device/' + uuid,
+            headers: {
+                'Authorization': Authorization,
+                'Content-Type': "application/json",
+            },
+            xhrFields: {
+                withCredentials: true
+            },
+            crossDomain: true,
+            //data: mydata,
+            success: function () {
+                layer.msg('successfully delete device', {
+                    time: 20000, //20s后自动关闭
+                    btn: ['OK']
+                });
+            },
+            error: function () {
+                layer.msg('delete device failed', {
+                    time: 20000, //20s后自动关闭
+                    btn: ['OK']
+                });
+            }
+        })
+    }
+
+    //setInterval(GetDevice(), 1000);
+
+
+    $("#reset_email").click(function () {
+        email = $("#email").val();
+        SetEmail(encodeURIComponent(email));
+    })
+
+    $("#delete_email").click(function () {
+        email = $("#email").attr("value", "");
+        DeleteEmail();
+    })
+
+    $("#delete_cloud_info").click(function () {
+        //let IsBan = $("#cloud_ban_box").is(':checked');
+        DeleteDevice()
+    })
+</script>
+<style>
+    @import url(https://fonts.googleapis.com/css?family=PT+Sans:400,700);
+
+    html {
+        background: #f1f2f7;
+    }
+
+    body {
+        font-family: "PT Sans";
+        /**text-align: center;**/
+        color: darken(#f1f2f7, 65%);
+    }
+
+    h1 {
+        font-size: 2em;
+    }
+
+    h2 {
+        font-size: 1.5em;
+        color: darken(#f1f2f7, 25%);
+    }
+
+    [type=file] {
+        position: absolute;
+        filter: alpha(opacity=0);
+        opacity: 0;
+    }
+
+
+
+    [type=file]+label {
+        top: 0.1em;
+        text-align: center;
+        /* Decorative */
+        background: #333;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+    }
+
+    [type=file]+label:hover {
+        background: #3399ff;
+    }
+
+    fieldset {
+        font-size: 1em;
+        border: 2px solid #000;
+        padding: 1.5em;
+        border-radius: 0.5em;
+    }
+
+    legend {
+        color: #000;
+        background: #f1f2f7;
+        /*padding: 0.25em 0.25em;*/
+        border-radius: 1em;
+        font-size: 1.7em;
+    }
+</style>
+</body>
+
+
+</html>

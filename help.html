@@ -1,0 +1,97 @@
+<html>
+
+<head>
+	<title>help</title>
+</head>
+
+<body>
+
+	<h3>This website is used to manage your prosthesis. The functions of each page are described below</h3>
+	<hr>
+
+	<h1 id="device-page">Device Page</h1>
+	<p>In this page， you can view all device information and modify some information</p>
+	<h2 id="email-management">Email Management</h2>
+	<p>Display the email bound to the device</p>
+	<h3 id="modify-email">Modify Email</h3>
+	<p>Set the contact email</p>
+	<h3 id="clear-email">Clear Email</h3>
+	<p>Clear the contact email</p>
+	<h2 id="device-information">Device Information</h2>
+	<p>Provides the client with status information of the device</p>
+	<h2 id="administrator-function">Administrator Function</h2>
+	<h3 id="delete-cloud-information">Delete Cloud Information</h3>
+	<p>Deletes everything of the specified device from the cloud</p>
+	<hr>
+
+	<h1 id="model-page">Model Page</h1>
+	In this page, you can manage the model in the Device and Cloud of the specific Algorithm. The specific functions are
+	as follows:
+	<h2 id="select-algorithm">Select Algorithm</h2>
+	<h3 id="select-an-algorithm">Select an Algorithm</h3>
+	Select an Algorithm here, and after that the target of many following operations is the model of selected algorithm.
+	<h2 id="update-model">Update Model</h2>
+	<h3 id="update-device-model">Update Device Model</h3>
+	Acquire the device model of the selected algorithm form Cloud. Upload it for a specific algorithm to the Device and
+	start to use selected algorithm
+	<h3 id="train-model-using-collected-data">Train Model Using Collected Data</h3>
+	Train the device model of a specific algorithm with calibration data uploaded. You can acquire calibration data in
+	DATA PAGE
+	<h3 id="download-base-model">Download Base Model</h3>
+	Download the base model of selected algorithm form Cloud
+	<h3 id="download-model-from-device">Download Model From Device</h3>
+	Download the current model of the current algorithm from the Device
+	<h2 id="delete-model">Delete Model</h2>
+	<h3 id="delete-local-model-from-device">Delete Local Model From Device</h3>
+	Clear device model of selected algorithm from the Device
+	<h3 id="delete-model-from-cloud">Delete Model From Cloud</h3>
+	Clear device model of selected algorithm from the Cloud
+	<h3 id="delete-model-of-all-algorithms">Delete Model of All Algorithms</h3>
+	Clear device model of All algorithms from the Cloud
+	<hr>
+
+	<h1 id="data-page">Data Page</h1>
+	<p>In this page, you can manage the collection, transfer and cleanup of calibration data</p>
+	<h2 id="data-collection">Data Collection</h2>
+	<h3 id="start-collection">Start Collection</h3>
+	<p>When this button is pressed, the system will ask each uncollected action in sequence whether to collect now. When
+		the user is ready, the data can be collected</p>
+	<h3 id="delete-local-data">Delete Local Data</h3>
+	<p>Delete local data and the user can collect data again</p>
+	<h2 id="data-management">Data Management</h2>
+	<h3 id="upload-data">Upload Data</h3>
+	<p>Upload new calibration data to the cloud platform</p>
+	<h3 id="delete-cloud-data">Delete Cloud Data</h3>
+	<p>Clears calibration data from the cloud</p>
+	<h2 id="administrator-function">Administrator Function</h2>
+	<h3 id="download-cloud-data">Download Cloud Data</h3>
+	<p>(ADMIN ONLY)Download the calibration data from the cloud</p>
+</body>
+
+<style>
+	@import url(https://fonts.googleapis.com/css?family=PT+Sans:400,700);
+
+	html {
+		background: #f1f2f7;
+	}
+
+	body {
+		font-family: "PT Sans";
+		/**text-align: center;**/
+		color: darken(#f1f2f7, 65%);
+	}
+
+	h1 {
+		font-size: 2em;
+	}
+
+	h2 {
+		font-size: 1.5em;
+	}
+
+	h3 {
+		font-size: 1em;
+	}
+</style>
+
+</html>
