@@ -179,7 +179,6 @@ function updateModel(){
     xhr.responseType = "blob";
     xhr.onload = function () {
         if (this.status == 200) {
-        	alert();
 			var lastModified = xhr.getResponseHeader('Last-Modified');
 			if(lastModified==null){
 				lastModified='Only Base Model';
