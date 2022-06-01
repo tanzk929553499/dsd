@@ -28,7 +28,7 @@ $(function(){
             //ajax提交表单，#login_form为表单的ID。 如：$('#login_form').ajaxSubmit(function(data) { ... });
             $.ajax({
                 type: 'GET',
-                url: 'https://device-api.ifan.dev:8' + '/',
+                url: 'https://device.pigeonhole.fun' + '/',
                 dataType: 'json',
                 success: function (data) {
                     localStorage.setItem('uuid', data.id);

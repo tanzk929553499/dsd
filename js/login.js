@@ -20,7 +20,7 @@
 				});
 				$.ajax({
 					type: 'POST',
-					url: 'https://cloud-api.ifan.dev:8/api/session',
+					url: '/api/session',
 					xhrFields: {
 						withCredentials: true
 					},
@@ -65,7 +65,7 @@
 					show_msg('Logging in, please wait...','/');
 					$.ajax({
 						type: 'GET',
-						url: 'https://device-api.ifan.dev:8' + '/',
+						url: 'https://device.pigeonhole.fun' + '/',
 						dataType: 'json',
 						success: function (data) {
 							localStorage.setItem('uuid', data.id);

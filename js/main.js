@@ -37,10 +37,10 @@ $(document).ready(function(){
     }
     
     console.log("get deviceid:"+sessionStorage.getItem("uuid"));
-    $.get("https://cloud-api.ifan.dev:8/api/timestamp",function(data,status,fn){
+    $.get("/api/timestamp",function(data,status,fn){
         save("timestamp",data);
         console.log("successtimestamp");
-        $.get("https://device-api.ifan.dev:8/ticket?ts="+data,function(data2,status2,fn2){
+        $.get("https://device.pigeonhole.fun/ticket?ts="+data,function(data2,status2,fn2){
             save("ticket",data2);
             console.log("successticket");
         })

@@ -96,8 +96,10 @@
 	var Authorization = localStorage.getItem("ticket");
 	var isAdmin = localStorage.getItem("isadmin");
 	var algoList;
-	var deviceApiUrl = 'https://device-api.ifan.dev:8';
-	var cloudApiUrl = 'https://cloud-api.ifan.dev:8';
+	//var deviceApiUrl = 'https://device-api.ifan.dev:8';
+	//var cloudApiUrl = 'https://cloud-api.ifan.dev:8';
+	var deviceApiUrl = 'https://device.pigeonhole.fun';
+	var cloudApiUrl = '';
 
 $(document).ready(function(){
 	if(isAdmin=='false'){
