@@ -260,7 +260,8 @@
                 $("#battery").attr("value", data.battery);
                 $("#charge").attr("value", data.charging);
                 $("#predict").attr("value", data.prediction);*/
-                $("#ID").val(localStorage.getItem("fuuid"));
+                $("#ID").val(data.id);
+                localStorage.setItem('uuid',data.id);
                 $("#battery").val(data.battery);
                 $("#charge").val(data.charging);
                 $("#algorithm").val(data.algorithm.display);

@@ -8,6 +8,7 @@ $(document).ready(function(){
         else{
             console.log(temp);
             save("fuuid",temp);
+            save("uuid",temp);
             alert("Modified successfully");
         }
 
