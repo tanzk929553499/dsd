@@ -196,7 +196,7 @@ function updateModel(){
 				type:0,
 				closeBtn:0,
 				btn:["Yes","No"],
-				content:"Last-Modified: " + lastModified + "  " + "Size:" + size + "B",
+				content:"Last-Modified: " + lastModified + "  " + "Size: " + size + "B",
 				btn1:function(){
 					
 					$.ajax({
@@ -236,7 +236,7 @@ function updateModel(){
 						error:function(jqXHR, textStatus, errorThrown){
 							if(jqXHR.status == 400){
 								layui.use('layer', function(){
-									layer.alert("Signature is NOT Valid!",{title: "Information", btn: ['OK']});
+									layer.alert("Signature is NOT Valid!",{title: "Warnning!", btn: ['OK']});
 								})
 							}else if(jqXHR.status == 401){
 								layui.use('layer', function(){
@@ -262,7 +262,7 @@ function updateModel(){
 		}
 		else if(this.status == 400){
 			layui.use('layer', function(){
-				layer.alert("UUID is NOT Valid!",{title: "Information", btn: ['OK']});
+				layer.alert("UUID is NOT Valid!",{title: "Warnning!", btn: ['OK']});
 			})
 			$("#updateProgressDiv").css('display','none'); 
 		}
@@ -273,7 +273,7 @@ function updateModel(){
 		}
 		else{
 			layui.use('layer', function(){
-				layer.alert("ERROR!",{title: "Information", btn: ['OK']});
+				layer.alert("ERROR!",{title: "Warnning!", btn: ['OK']});
 			})	
 			$("#updateProgressDiv").css('display','none'); 
 		}
@@ -500,11 +500,11 @@ function uploadModelCloud(){
 				})
 			}else if(jqXHR.status == 401){
 				layui.use('layer', function(){
-					layer.alert("Invalid device ticket!",{title: "Warnning!", btn: ['OK']});
+					layer.alert("Invalid administrator session!",{title: "Warnning!", btn: ['OK']});
 				})
 			}else{
 			    layui.use('layer', function(){
-					layer.alert("Upload failed!",{title: "Information", btn: ['OK']});
+					layer.alert("Upload failed because of unknown error!",{title: "Information", btn: ['OK']});
 				})
 			}
 
@@ -590,11 +590,11 @@ function uploadBaseModelCloud(){
 				})
 			}else if(jqXHR.status == 401){
 				layui.use('layer', function(){
-					layer.alert("Invalid device ticket!",{title: "Warnning!", btn: ['OK']});
+					layer.alert("Invalid administrator session!",{title: "Warnning!", btn: ['OK']});
 				})
 			}else{
 				layui.use('layer', function(){
-					layer.alert("Upload failed!",{title: "Information", btn: ['OK']});
+					layer.alert("Upload failed because of unknown error!",{title: "Warnning!", btn: ['OK']});
 				})
 			}
 		    
@@ -642,7 +642,7 @@ function getBaseModelCloud(){
 			})
 		}else{
 			layui.use('layer', function(){
-				layer.alert("Download failed!",{title: "Warnning!", btn: ['OK']});
+				layer.alert("Download failed because of unknown error!",{title: "Warnning!", btn: ['OK']});
 			})	
 		}
     };
@@ -696,7 +696,7 @@ function getModelDevice(){
 			})
 		}else{
 			layui.use('layer', function(){
-				layer.alert("Download failed!",{title: "Warnning!", btn: ['OK']});
+				layer.alert("Download failed because of unknown error!",{title: "Warnning!", btn: ['OK']});
 			})	
 		}
     };

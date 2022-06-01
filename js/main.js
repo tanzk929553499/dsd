@@ -33,6 +33,7 @@ $(document).ready(function(){
         console.log("is user");
 
         $("div#guide li#admin").hide();
+        $("div#guide li#log_out").hide();
     }
     
     console.log("get deviceid:"+sessionStorage.getItem("uuid"));

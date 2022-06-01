@@ -1,1 +1,9 @@
-# dsd
+# DSDinter
+
+uuid
+
+timestamp
+
+ticket
+
+isadmin
